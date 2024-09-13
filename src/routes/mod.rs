@@ -1,4 +1,4 @@
-mod user;
-mod paintings;
-mod painting;
-mod messages;
+pub mod user;
+pub mod paintings;
+pub mod painting;
+pub mod messages;
