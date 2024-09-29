@@ -1,6 +1,6 @@
+use crate::error::Error;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
-use crate::error::Error;
 
 pub(crate) fn save_file(file: &mut File, path: &str) -> Result<(), Error> {
     // let mut buffer = Vec::new();

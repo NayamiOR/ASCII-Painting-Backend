@@ -151,7 +151,6 @@ pub(crate) struct CodeResponse {
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct GetPaintingsResponseData {
-    
     pub id: i64,
     pub name: String,
     pub content: String,
@@ -162,7 +161,6 @@ pub(crate) struct GetPaintingsResponseData {
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct GetPaintingsResponse {
-    
     pub message: String,
     pub data: Vec<GetPaintingsResponseData>,
 }

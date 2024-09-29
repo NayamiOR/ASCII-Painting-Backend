@@ -29,7 +29,6 @@ pub fn create_route() -> Router<ApiContext> {
     )
 }
 
-
 #[debug_handler]
 async fn login(
     State(state): State<ApiContext>,
@@ -274,19 +273,4 @@ mod tests {
         println!("{}", json["message"]);
         assert_eq!(json["message"], "No such user");
     }
-
-    // #[tokio::test]
-    // async fn test_info() {
-    //     todo!()
-    // }
-    // 
-    // #[tokio::test]
-    // async fn test_update_info() {
-    //     todo!()
-    // }
-    // 
-    // #[tokio::test]
-    // async fn test_update_avatar() {
-    //     todo!()
-    // }
 }

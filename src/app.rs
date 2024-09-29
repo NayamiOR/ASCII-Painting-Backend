@@ -12,10 +12,7 @@ pub async fn api_router() -> Router {
         .connect(&database_url)
         .await
         .expect("数据库连接失败");
-    let api_context = ApiContext {
-        config,
-        pool,
-    };
+    let api_context = ApiContext { config, pool };
     Router::new()
         .merge(crate::routes::user::create_route())
         .merge(crate::routes::paintings::create_route())

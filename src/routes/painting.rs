@@ -107,7 +107,7 @@ async fn like_painting(
     State(state): State<ApiContext>,
     Json(payload): Json<LikePaintingRequest>,
 ) -> Json<LikePaintingResponse> {
-    todo!("获取画作列表函数")
+    todo!("获取画作")
 }
 
 #[debug_handler]

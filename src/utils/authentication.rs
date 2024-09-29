@@ -71,7 +71,6 @@ pub(crate) fn validate_jwt(token: &str) -> bool {
     true
 }
 
-
 pub(crate) fn extract_claims(token: &str) -> Result<Claims, Error> {
     match decode::<Claims>(
         token,
@@ -79,14 +78,18 @@ pub(crate) fn extract_claims(token: &str) -> Result<Claims, Error> {
         &Validation::default(),
     ) {
         Ok(token_data) => Ok(token_data.claims),
-        Err(_) => Err(Error::Server(Box::new(crate::error::ServerError::Unauthorized))),
+        Err(_) => Err(Error::Server(Box::new(
+            crate::error::ServerError::Unauthorized,
+        ))),
     }
 }
 
 pub(crate) fn extract_claims_from_header(header_map: HeaderMap) -> Result<Claims, Error> {
     // check Authorization header
     if !header_map.contains_key("Authorization") {
-        return Err(Error::Server(Box::new(crate::error::ServerError::Unauthorized)));
+        return Err(Error::Server(Box::new(
+            crate::error::ServerError::Unauthorized,
+        )));
     }
     let header = header_map.get("Authorization").unwrap().to_str().unwrap();
     let token = header.split_whitespace().last().unwrap();

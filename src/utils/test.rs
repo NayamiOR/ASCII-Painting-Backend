@@ -1,7 +1,7 @@
-use std::env;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
-use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
+use sqlx::PgPool;
+use std::env;
 
 pub(crate) fn get_random_string(length: usize) -> String {
     thread_rng()

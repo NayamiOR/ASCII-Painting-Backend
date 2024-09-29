@@ -2,23 +2,16 @@
 
 mod app;
 mod app_config;
+mod config;
 mod dao;
 mod error;
 mod log;
+mod models;
 mod routes;
 mod utils;
-mod config;
-mod models;
 
+use sqlx::postgres::PgPoolOptions;
 use std::collections::HashMap;
-use axum::{
-    response::{Html, Json},
-    extract::State,
-    routing::get,
-    Router,
-};
-use axum_macros::debug_handler;
-use sqlx::postgres::{PgPoolOptions};
 use std::env;
 
 #[tokio::main]
@@ -29,14 +22,17 @@ async fn main() {
     let _ = env::var("DATABASE_URL").expect("DATABASE_URL is not set");
     let _ = env::var("DATA_DIR").expect("DATA_DIR is not set");
     // let _ = env::var("JWT_SECRET").expect("JWT_SECRET is not set");
-    
-    let config:HashMap<String,String> =env::vars().collect();
 
-    let url = format!("localhost:{}",config.get("PORT").unwrap_or(&"3000".to_string()));
+    let config: HashMap<String, String> = env::vars().collect();
+
+    let url = format!(
+        "localhost:{}",
+        config.get("PORT").unwrap_or(&"3000".to_string())
+    );
 
     let database_url = env::var("DATABASE_URL").unwrap();
 
-    let pool=PgPoolOptions::new()
+    let pool = PgPoolOptions::new()
         .max_connections(100)
         .connect(&database_url)
         .await
@@ -47,10 +43,7 @@ async fn main() {
         .await
         .expect("数据库迁移失败");
 
-    let api_context=ApiContext{
-        config,
-        pool,
-    };
+    let api_context = ApiContext { config, pool };
 
     let listener = tokio::net::TcpListener::bind(url)
         .await
@@ -63,10 +56,10 @@ async fn main() {
         .unwrap();
 }
 
-#[derive(Debug,Clone)]
-struct ApiContext{
-    config:HashMap<String,String>,
-    pool:sqlx::PgPool,
+#[derive(Debug, Clone)]
+struct ApiContext {
+    config: HashMap<String, String>,
+    pool: sqlx::PgPool,
 }
 
 #[cfg(test)]

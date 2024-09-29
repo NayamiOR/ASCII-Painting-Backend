@@ -102,13 +102,13 @@ pub(crate) async fn filter_paintings(
     pool: &PgPool,
     filter: PaintingFilter,
 ) -> Result<Vec<Painting>, Error> {
-    let mut query_str =r#" select * from paintings "#.to_string();
+    let mut query_str = r#" select * from paintings "#.to_string();
     if let Some(state) = filter.state {
         todo!()
     }
     if let Some(sort) = filter.sort {
         todo!()
-    }    
+    }
     if let Some(page) = filter.page {
         todo!()
     }
@@ -164,7 +164,7 @@ impl From<i32> for PaintingSort {
     }
 }
 
-#[derive(sqlx::FromRow, Clone,Debug)]
+#[derive(sqlx::FromRow, Clone, Debug)]
 pub(crate) struct Painting {
     pub(crate) id: i32,
     pub(crate) name: String,
@@ -267,8 +267,7 @@ mod tests {
             .await
             .unwrap();
 
-        let get_painting = get_painting_by_id(&init_pool().await, painting.id)
-            .await;
+        let get_painting = get_painting_by_id(&init_pool().await, painting.id).await;
         dbg!(&get_painting);
         let get_painting = get_painting.unwrap();
 
