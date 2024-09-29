@@ -126,7 +126,7 @@ pub(crate) async fn delete_painting_by_id(pool: &PgPool, painting_id: i32) -> Re
     todo!()
 }
 
-struct PaintingFilter {
+pub(crate) struct PaintingFilter {
     page: Option<i32>,
     sort: Option<PaintingSort>,
     time: Option<String>,
