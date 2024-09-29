@@ -1,5 +1,6 @@
 use crate::dao::{self, get_user_by_email, save_user, user_email_exist, User};
 use crate::error::{Error, ServerError};
+use crate::models::*;
 use crate::utils::authentication::{
     extract_claims_from_header, generate_jwt, generate_refresh_token,
 };
@@ -28,86 +29,6 @@ pub fn create_route() -> Router<ApiContext> {
     )
 }
 
-#[derive(Serialize, Debug, Deserialize)]
-struct LoginResponse {
-    message: String,
-    refresh_token: String,
-}
-
-#[derive(Deserialize)]
-struct LoginRequest {
-    email: String,
-    password: String,
-}
-
-#[derive(Serialize, Debug)]
-struct RegisterResponse {
-    message: String,
-    refresh_token: String,
-}
-
-#[derive(Deserialize)]
-struct RegisterRequest {
-    name: String,
-    email: String,
-    password: String,
-    // 暂时不实现
-    // code: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct UserInfoResponseData {
-    pub id: i32,
-    pub name: String,
-    pub avatar: String,
-    pub work_num: i64,
-    pub like_num: i64,
-    pub favorite_num: i64,
-}
-
-#[derive(Serialize, Deserialize)]
-struct UserInfoResponse {
-    pub message: String,
-    pub data: UserInfoResponseData,
-}
-
-#[derive(Serialize, Deserialize)]
-struct UpdateUserInfoResponse {
-    pub message: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct UpdateUserInfoRequest {
-    // todo
-    pub name: String,
-}
-
-// multipart/form-data includes a optional file field
-#[derive(Serialize, Deserialize)]
-struct UpdateAvatarRequest {
-    pub avatar: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct UpdateAvatarResponse {
-    pub avatar: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct UpdateAvatarResponseData {
-    pub message: String,
-    pub data: UpdateAvatarResponse,
-}
-
-#[derive(Serialize, Deserialize)]
-struct CodeRequest {
-    pub email: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct CodeResponse {
-    pub message: String,
-}
 
 #[debug_handler]
 async fn login(
@@ -354,18 +275,18 @@ mod tests {
         assert_eq!(json["message"], "No such user");
     }
 
-    #[tokio::test]
-    async fn test_info() {
-        todo!()
-    }
-
-    #[tokio::test]
-    async fn test_update_info() {
-        todo!()
-    }
-
-    #[tokio::test]
-    async fn test_update_avatar() {
-        todo!()
-    }
+    // #[tokio::test]
+    // async fn test_info() {
+    //     todo!()
+    // }
+    // 
+    // #[tokio::test]
+    // async fn test_update_info() {
+    //     todo!()
+    // }
+    // 
+    // #[tokio::test]
+    // async fn test_update_avatar() {
+    //     todo!()
+    // }
 }

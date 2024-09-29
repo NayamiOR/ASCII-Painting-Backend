@@ -3,6 +3,7 @@ use crate::dao::{
     PaintingState,
 };
 use crate::error::{Error, ServerError};
+use crate::models::*;
 use crate::utils::authentication::*;
 use crate::ApiContext;
 use axum::extract::{Json, Query, State};
@@ -51,7 +52,7 @@ async fn create_painting(
         return Err(Error::Server(Box::new(ServerError::Unauthorized)));
     }
 
-    let author_id = extract_claims(jwt).unwrap().id;
+    let author_id = extract_claims(jwt)?.id;
     let painting = Painting {
         id: 0,
         name,
@@ -123,71 +124,4 @@ async fn pass_painting(
     Json(payload): Json<PassPaintingRequest>,
 ) -> Json<PassPaintingResponse> {
     todo!("通过画作函数")
-}
-
-#[derive(Serialize, Deserialize)]
-struct GetPaintingResponse {
-    pub id: i64,
-    pub name: String,
-    pub avatar: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct Data {
-    pub id: i64,
-    pub name: String,
-    pub content: String,
-    pub favorite_num: i64,
-    pub like_num: i64,
-    pub time: String,
-    pub author: GetPaintingResponse,
-}
-
-#[derive(Serialize, Deserialize)]
-struct CreatePaintingRequest {
-    pub name: String,
-    pub content: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct CreatePaintingResponse {
-    pub message: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct DeletePaintingResponse {
-    pub message: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct LikePaintingRequest {
-    pub painting_id: i64,
-    pub state: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct LikePaintingResponse {
-    pub message: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct FavoritePaintingRequest {
-    pub painting_id: i64,
-    pub state: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct FavoritePaintingResponse {
-    pub message: String,
-}
-
-#[derive(Serialize, Deserialize)]
-struct PassPaintingRequest {
-    pub id: i64,
-    pub state: i64,
-}
-
-#[derive(Serialize, Deserialize)]
-struct PassPaintingResponse {
-    pub message: String,
 }

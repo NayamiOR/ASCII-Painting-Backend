@@ -1,0 +1,180 @@
+use axum::extract::rejection::FailedToDeserializeForm;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct GetPaintingResponse {
+    pub id: i64,
+    pub name: String,
+    pub avatar: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct Data {
+    pub id: i64,
+    pub name: String,
+    pub content: String,
+    pub favorite_num: i64,
+    pub like_num: i64,
+    pub time: String,
+    pub author: GetPaintingResponse,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct CreatePaintingRequest {
+    pub name: String,
+    pub content: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct CreatePaintingResponse {
+    pub message: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct DeletePaintingResponse {
+    pub message: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct LikePaintingRequest {
+    pub painting_id: i64,
+    pub state: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct LikePaintingResponse {
+    pub message: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct FavoritePaintingRequest {
+    pub painting_id: i64,
+    pub state: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct FavoritePaintingResponse {
+    pub message: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct PassPaintingRequest {
+    pub id: i64,
+    pub state: i64,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct PassPaintingResponse {
+    pub message: String,
+}
+
+#[derive(Serialize, Debug, Deserialize)]
+pub(crate) struct LoginResponse {
+    pub(crate) message: String,
+    pub(crate) refresh_token: String,
+}
+
+#[derive(Deserialize)]
+pub(crate) struct LoginRequest {
+    pub(crate) email: String,
+    pub(crate) password: String,
+}
+
+#[derive(Serialize, Debug)]
+pub(crate) struct RegisterResponse {
+    pub(crate) message: String,
+    pub(crate) refresh_token: String,
+}
+
+#[derive(Deserialize)]
+pub(crate) struct RegisterRequest {
+    pub(crate) name: String,
+    pub(crate) email: String,
+    pub(crate) password: String,
+    // 暂时不实现
+    // code: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct UserInfoResponseData {
+    pub id: i32,
+    pub name: String,
+    pub avatar: String,
+    pub work_num: i64,
+    pub like_num: i64,
+    pub favorite_num: i64,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct UserInfoResponse {
+    pub message: String,
+    pub data: UserInfoResponseData,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct UpdateUserInfoResponse {
+    pub message: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct UpdateUserInfoRequest {
+    // todo
+    pub name: String,
+}
+
+// multipart/form-data includes a optional file field
+#[derive(Serialize, Deserialize)]
+pub(crate) struct UpdateAvatarRequest {
+    pub avatar: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct UpdateAvatarResponse {
+    pub avatar: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct UpdateAvatarResponseData {
+    pub message: String,
+    pub data: UpdateAvatarResponse,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct CodeRequest {
+    pub email: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct CodeResponse {
+    pub message: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct GetPaintingsResponseData {
+    
+    pub id: i64,
+    pub name: String,
+    pub content: String,
+    pub favorite_num: i64,
+    pub like_num: i64,
+    pub state: i64,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct GetPaintingsResponse {
+    
+    pub message: String,
+    pub data: Vec<GetPaintingsResponseData>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct GetUserPaintingsResponse {}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct GetMessagesResponse {}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct DeleteMessagesRequest {}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct DeleteMessagesResponse {}

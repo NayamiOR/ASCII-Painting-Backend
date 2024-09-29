@@ -8,6 +8,7 @@ mod log;
 mod routes;
 mod utils;
 mod config;
+mod models;
 
 use std::collections::HashMap;
 use axum::{

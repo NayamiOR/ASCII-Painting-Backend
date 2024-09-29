@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use axum::routing::{get};
 use crate::{dao::{PaintingSort, PaintingState}, ApiContext};
 use crate::dao::PaintingFilter;
+use crate::models::*;
 
 pub fn create_route() -> Router<ApiContext>{
     Router::new().nest(
@@ -31,21 +32,3 @@ async fn get_user_paintings(State(state):State<ApiContext>,Query(id): Query<Stri
     todo!("获取用户画作列表函数")
 }
 
-#[derive(Serialize, Deserialize)]
-struct GetPaintingsResponseData {
-    pub id: i64,
-    pub name: String,
-    pub content: String,
-    pub favorite_num: i64,
-    pub like_num: i64,
-    pub state: i64,
-}
-
-#[derive(Serialize, Deserialize)]
-struct GetPaintingsResponse {
-    pub message: String,
-    pub data: Vec<GetPaintingsResponseData>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct GetUserPaintingsResponse {}

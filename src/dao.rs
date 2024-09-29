@@ -164,7 +164,7 @@ impl From<i32> for PaintingSort {
     }
 }
 
-#[derive(sqlx::FromRow, Clone)]
+#[derive(sqlx::FromRow, Clone,Debug)]
 pub(crate) struct Painting {
     pub(crate) id: i32,
     pub(crate) name: String,
@@ -268,8 +268,9 @@ mod tests {
             .unwrap();
 
         let get_painting = get_painting_by_id(&init_pool().await, painting.id)
-            .await
-            .unwrap();
+            .await;
+        dbg!(&get_painting);
+        let get_painting = get_painting.unwrap();
 
         assert_eq!(get_painting.name, painting.name);
         assert_eq!(get_painting.content, painting.content);
