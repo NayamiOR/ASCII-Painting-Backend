@@ -1,13 +1,27 @@
+use crate::ApiContext;
 use axum::response::Html;
+use axum::routing::get;
 use axum::{Json, Router};
-use axum::routing::{get};
 
-pub async fn create_app() -> Router {
+pub async fn api_router() -> Router {
+    let database_url = std::env::var("DATABASE_URL").unwrap();
+    let config: std::collections::HashMap<String, String> = std::env::vars().collect();
+
+    let pool = sqlx::postgres::PgPoolOptions::new()
+        .max_connections(100)
+        .connect(&database_url)
+        .await
+        .expect("数据库连接失败");
+    let api_context = ApiContext {
+        config,
+        pool,
+    };
     Router::new()
         .merge(crate::routes::user::create_route())
         .merge(crate::routes::paintings::create_route())
         .merge(crate::routes::painting::create_route())
         .merge(crate::routes::messages::create_route())
+        .with_state(api_context)
         .route("/hello", get(hello))
         .route("/hello_json", get(hello_json))
 }
