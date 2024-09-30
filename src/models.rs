@@ -1,22 +1,11 @@
-use axum::extract::rejection::FailedToDeserializeForm;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct GetPaintingResponse {
     pub id: i64,
     pub name: String,
+    // todo: avatar?
     pub avatar: String,
-}
-
-#[derive(Serialize, Deserialize)]
-pub(crate) struct Data {
-    pub id: i64,
-    pub name: String,
-    pub content: String,
-    pub favorite_num: i64,
-    pub like_num: i64,
-    pub time: String,
-    pub author: GetPaintingResponse,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -150,19 +139,20 @@ pub(crate) struct CodeResponse {
 }
 
 #[derive(Serialize, Deserialize)]
-pub(crate) struct GetPaintingsResponseData {
-    pub id: i64,
-    pub name: String,
-    pub content: String,
-    pub favorite_num: i64,
-    pub like_num: i64,
-    pub state: i64,
+pub(crate) struct GetPaintingsResponse {
+    pub message: String,
+    pub data: Vec<PaintingData>,
 }
 
 #[derive(Serialize, Deserialize)]
-pub(crate) struct GetPaintingsResponse {
-    pub message: String,
-    pub data: Vec<GetPaintingsResponseData>,
+pub(crate) struct PaintingData {
+    pub id: i32,
+    pub name: String,
+    pub content: String,
+    pub favorite_num: i32,
+    pub like_num: i32,
+    pub browse_num: i32,
+    pub state: i32,
 }
 
 #[derive(Serialize, Deserialize)]
