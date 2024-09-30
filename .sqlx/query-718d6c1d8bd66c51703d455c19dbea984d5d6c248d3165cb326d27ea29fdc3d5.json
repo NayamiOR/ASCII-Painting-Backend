@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": " \n        insert into paintings (name,author_id,content,created_at) \n        VALUES ($1, $2, $3, $4 ) \n        RETURNING id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Int4",
+        "Text",
+        "Timestamp"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "718d6c1d8bd66c51703d455c19dbea984d5d6c248d3165cb326d27ea29fdc3d5"
+}
