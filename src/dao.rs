@@ -1,38 +1,45 @@
 use crate::error::Error;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPool;
 use sqlx::types::chrono::{NaiveDateTime, Utc};
-use sqlx::{query, Decode, Encode, Type};
+use sqlx::{Decode, Encode, Type};
 
-pub(crate) async fn save_painting(pool: &PgPool, painting: Painting) -> Result<(), Error> {
-    sqlx::query!(
-        r#" insert into paintings (name,author_id,content,created_at) VALUES ($1, $2, $3, $4 ) "#,
+pub(crate) async fn save_painting(pool: &PgPool, painting: Painting) -> Result<i32, Error> {
+    let returning = sqlx::query!(
+        r#" 
+        insert into paintings (name,author_id,content,created_at) 
+        VALUES ($1, $2, $3, $4 ) 
+        RETURNING id
+        "#,
         painting.name,
         painting.author_id,
         painting.content,
         painting.created_at
     )
-    .execute(pool)
+    .fetch_one(pool)
     .await
-    .map_err(|e| Error::Database(Box::new(e)));
+    .map_err(|e| Error::Database(Box::new(e)))?;
 
-    Ok(())
+    Ok(returning.id)
 }
 
-pub(crate) async fn save_user(pool: &PgPool, user: &User) -> Result<(), Error> {
+pub(crate) async fn save_user(pool: &PgPool, user: &User) -> Result<i32, Error> {
     let pwd = bcrypt::hash(&user.password, 12).unwrap();
-    dotenv::dotenv().ok();
-    sqlx::query!(
-        r#" insert into users (username,email,password,created_at) VALUES ($1, $2, $3, $4) "#,
+    let returning = sqlx::query!(
+        r#" insert into users (username,email,password,created_at) 
+        VALUES ($1, $2, $3, $4) 
+        RETURNING id
+        "#,
         user.username,
         user.email,
         pwd,
         user.created_at
     )
-    .execute(pool)
+    .fetch_one(pool)
     .await
-    .map_err(|e| Error::Database(Box::new(e)));
-    Ok(())
+    .map_err(|e| Error::Database(Box::new(e)))?;
+
+    Ok(returning.id)
 }
 
 pub(crate) async fn get_user_by_email(pool: &PgPool, email: &str) -> Result<User, Error> {
@@ -98,6 +105,25 @@ pub(crate) async fn get_paintings_by_author_id(
 ) -> Result<Vec<Painting>, Error> {
     todo!()
 }
+
+pub(crate) async fn like_painting(
+    pool: &PgPool,
+    painting_id: i32,
+    user_id: i32,
+    cancel_like: bool,
+) -> Result<(), Error> {
+    todo!()
+}
+
+pub(crate) async fn favorite_painting(
+    pool: &PgPool,
+    painting_id: i32,
+    user_id: i32,
+    cancel_favorite: bool,
+) -> Result<(), Error> {
+    todo!()
+}
+
 pub(crate) async fn filter_paintings(
     pool: &PgPool,
     filter: PaintingFilter,
@@ -127,10 +153,10 @@ pub(crate) async fn delete_painting_by_id(pool: &PgPool, painting_id: i32) -> Re
 }
 
 pub(crate) struct PaintingFilter {
-    page: Option<i32>,
-    sort: Option<PaintingSort>,
-    time: Option<String>,
-    state: Option<PaintingState>,
+    pub(crate) page: Option<i32>,
+    pub(crate) sort: Option<PaintingSort>,
+    pub(crate) time: Option<String>,
+    pub(crate) state: Option<PaintingState>,
 }
 
 impl Default for PaintingFilter {
@@ -240,9 +266,14 @@ mod tests {
             password: get_random_string(64),
         };
 
-        save_user(&pool, &user).await.unwrap();
+        let returning = save_user(&pool, &user).await.unwrap();
 
         let get_user = get_user_by_email(&pool, email.as_str()).await.unwrap();
+        assert_eq!(get_user.username, random_name);
+        assert_eq!(get_user.email, email);
+        assert!(bcrypt::verify(&user.password, &get_user.password).unwrap());
+
+        let get_user = get_user_by_id(&pool, returning).await.unwrap();
         assert_eq!(get_user.username, random_name);
         assert_eq!(get_user.email, email);
         assert!(bcrypt::verify(&user.password, &get_user.password).unwrap());
@@ -263,11 +294,11 @@ mod tests {
             state: PaintingState::Unreviewed,
         };
 
-        save_painting(&init_pool().await, painting.clone())
+        let returning = save_painting(&init_pool().await, painting.clone())
             .await
             .unwrap();
 
-        let get_painting = get_painting_by_id(&init_pool().await, painting.id).await;
+        let get_painting = get_painting_by_id(&init_pool().await, returning).await;
         dbg!(&get_painting);
         let get_painting = get_painting.unwrap();
 
