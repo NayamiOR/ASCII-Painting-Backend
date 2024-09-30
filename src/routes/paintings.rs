@@ -1,4 +1,5 @@
-use crate::dao::PaintingFilter;
+use crate::dao::{filter_paintings, PaintingFilter};
+use crate::error::Error;
 use crate::models::*;
 use crate::{
     dao::{PaintingSort, PaintingState},
@@ -8,7 +9,7 @@ use axum::extract::{Json, Query, State};
 use axum::routing::get;
 use axum::Router;
 use axum_macros::debug_handler;
-use serde::{Deserialize, Serialize};
+use sqlx::types::chrono::DateTime;
 
 pub fn create_route() -> Router<ApiContext> {
     Router::new().nest(
@@ -24,15 +25,37 @@ async fn get_paintings(
     State(state): State<ApiContext>,
     Query(page): Query<String>,
     Query(sort): Query<PaintingSort>,
+    Query(time): Query<String>, // RFC3339 格式的时间戳
     Query(painting_state): Query<PaintingState>,
-) -> Json<GetPaintingsResponseData> {
-    // todo: 沟通API后加上时间限制
-    // let painting_filter = PaintingFilter{
-    //     page: page.parse().unwrap(),
-    //     sort: sort,
-    //     painting_state: painting_state,
-    // };
-    todo!("获取画作列表函数")
+) -> Result<Json<GetPaintingsResponse>, Error> {
+    let pool = &state.pool;
+
+    let painting_filter = PaintingFilter {
+        page: Some(page.parse().unwrap()),
+        sort: Some(sort),
+        state: Some(painting_state),
+        time: Some(DateTime::parse_from_rfc3339(&time).unwrap().into()),
+    };
+
+    let paintings = filter_paintings(pool, painting_filter).await?;
+    let painting_data: Vec<PaintingData> = paintings
+        .iter()
+        .map(|painting| PaintingData {
+            id: painting.id,
+            name: painting.name.clone(),
+            content: painting.content.clone(),
+            state: painting.state.clone(),
+            favorite_num: painting.favorite_num,
+            like_num: painting.like_num,
+        })
+        .collect();
+
+    let json = Json(GetPaintingsResponse {
+        message: format!("Get {} paintings success", paintings.len()),
+        data: painting_data,
+    });
+
+    Ok(json)
 }
 
 #[debug_handler]

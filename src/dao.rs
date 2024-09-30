@@ -1,8 +1,8 @@
 use crate::error::Error;
 use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPool;
-use sqlx::types::chrono::{NaiveDateTime, Utc};
-use sqlx::{Decode, Encode, Type};
+use sqlx::types::chrono::{DateTime, NaiveDateTime, Utc};
+use sqlx::{Decode, Encode, Execute, Postgres, QueryBuilder, Type};
 
 pub(crate) async fn save_painting(pool: &PgPool, painting: Painting) -> Result<i32, Error> {
     let returning = sqlx::query!(
@@ -16,9 +16,9 @@ pub(crate) async fn save_painting(pool: &PgPool, painting: Painting) -> Result<i
         painting.content,
         painting.created_at
     )
-    .fetch_one(pool)
-    .await
-    .map_err(|e| Error::Database(Box::new(e)))?;
+        .fetch_one(pool)
+        .await
+        .map_err(|e| Error::Database(Box::new(e)))?;
 
     Ok(returning.id)
 }
@@ -35,9 +35,9 @@ pub(crate) async fn save_user(pool: &PgPool, user: &User) -> Result<i32, Error> 
         pwd,
         user.created_at
     )
-    .fetch_one(pool)
-    .await
-    .map_err(|e| Error::Database(Box::new(e)))?;
+        .fetch_one(pool)
+        .await
+        .map_err(|e| Error::Database(Box::new(e)))?;
 
     Ok(returning.id)
 }
@@ -88,8 +88,17 @@ fn check_result<T>(result: Result<T, Error>) -> Result<bool, Error> {
     }
 }
 
-pub(crate) async fn set_user_name(pool: &PgPool, user_id: i32, name: &str) -> Result<(), Error> {
-    todo!()
+pub(crate) async fn set_user_name(pool: &PgPool, user_id: i32, name: &str) -> Result<i32, Error> {
+    let returning = sqlx::query!(
+        r#" update users set username = $1 where id = $2 RETURNING id "#,
+        name,
+        user_id
+    )
+        .fetch_one(pool)
+        .await
+        .map_err(|e| Error::Database(Box::new(e)))?;
+
+    Ok(returning.id)
 }
 
 pub(crate) async fn get_painting_by_id(pool: &PgPool, id: i32) -> Result<Painting, Error> {
@@ -103,7 +112,13 @@ pub(crate) async fn get_paintings_by_author_id(
     pool: &PgPool,
     author_id: i32,
 ) -> Result<Vec<Painting>, Error> {
-    todo!()
+    sqlx::query_as!(
+        Painting,
+        r#" select * from paintings where author_id = $1 "#,
+        author_id,
+    ).fetch_all(pool)
+        .await
+        .map_err(|e| Error::Database(Box::new(e)))
 }
 
 pub(crate) async fn like_painting(
@@ -112,6 +127,8 @@ pub(crate) async fn like_painting(
     user_id: i32,
     cancel_like: bool,
 ) -> Result<(), Error> {
+    // insert user action
+    // update painting like_num
     todo!()
 }
 
@@ -121,6 +138,8 @@ pub(crate) async fn favorite_painting(
     user_id: i32,
     cancel_favorite: bool,
 ) -> Result<(), Error> {
+    // insert user action
+    // update painting favorite_num
     todo!()
 }
 
@@ -128,20 +147,36 @@ pub(crate) async fn filter_paintings(
     pool: &PgPool,
     filter: PaintingFilter,
 ) -> Result<Vec<Painting>, Error> {
-    let mut query_str = r#" select * from paintings "#.to_string();
-    if let Some(state) = filter.state {
-        todo!()
-    }
+    let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new("SELECT * FROM paintings ");
     if let Some(sort) = filter.sort {
-        todo!()
+        query_builder.push("ORDER BY ");
+        match sort {
+            PaintingSort::Default => query_builder.push("created_at"),
+            PaintingSort::CreatedAt => query_builder.push("created_at"),
+            PaintingSort::LikeNum => query_builder.push("like_num"),
+            PaintingSort::FavoriteNum => query_builder.push("favorite_num"),
+        };
     }
-    if let Some(page) = filter.page {
-        todo!()
+    query_builder.push(" WHERE 1=1 ");
+    if let Some(state) = filter.state {
+        query_builder.push("AND state = ").push_bind(state as i32);
     }
     if let Some(time) = filter.time {
-        todo!()
+        query_builder.push("AND created_at > ").push_bind(time);
     }
-    todo!()
+    if let Some(page) = filter.page {
+        query_builder.push("LIMIT 10 OFFSET ").push_bind(page * 10);
+    }
+
+    let query = query_builder
+        .build()
+        .sql();
+    let paintings = sqlx::query_as(query)
+        .fetch_all(pool)
+        .await
+        .map_err(|e| Error::Database(Box::new(e)))?;
+
+    Ok(paintings)
 }
 
 pub(crate) async fn update_avatar(pool: &PgPool, user_id: i32, avatar: &str) -> Result<(), Error> {
@@ -155,7 +190,7 @@ pub(crate) async fn delete_painting_by_id(pool: &PgPool, painting_id: i32) -> Re
 pub(crate) struct PaintingFilter {
     pub(crate) page: Option<i32>,
     pub(crate) sort: Option<PaintingSort>,
-    pub(crate) time: Option<String>,
+    pub(crate) time: Option<DateTime<Utc>>,    // 时间戳格式
     pub(crate) state: Option<PaintingState>,
 }
 
@@ -164,7 +199,7 @@ impl Default for PaintingFilter {
         Self {
             page: Some(1),
             sort: Some(PaintingSort::Default),
-            time: None,
+            time: Some(Utc::now()),
             state: Some(PaintingState::Unreviewed),
         }
     }
@@ -202,7 +237,7 @@ pub(crate) struct Painting {
     pub(crate) state: PaintingState,
 }
 
-#[derive(Debug, Clone, PartialEq, Type, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Type, Deserialize, Serialize)]
 pub(crate) enum PaintingState {
     Unreviewed,
     Passed,
@@ -235,6 +270,7 @@ mod tests {
     use crate::utils::test::{get_random_string, init_pool};
     use lazy_static::lazy_static;
     use rand::random;
+    use sqlx::types::chrono::Utc;
     use std::env;
     use std::sync::Once;
 

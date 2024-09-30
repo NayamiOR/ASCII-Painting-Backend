@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use crate::dao::PaintingState;
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct GetPaintingResponse {
@@ -151,8 +152,8 @@ pub(crate) struct PaintingData {
     pub content: String,
     pub favorite_num: i32,
     pub like_num: i32,
-    pub browse_num: i32,
-    pub state: i32,
+    // pub browse_num: i32,
+    pub state: PaintingState,
 }
 
 #[derive(Serialize, Deserialize)]
