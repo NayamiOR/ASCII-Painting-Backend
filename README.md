@@ -11,3 +11,4 @@ API 文档请参考： [API 文档](https://apifox.com/apidoc/shared-93744361-57
 - `DATABASE_URL`：数据库连接字符串
 - `SECRET_KEY`：JWT 加密密钥，暂未使用
 - `RUST_BACKTRACE`：Rust 后端错误栈开关，建议设置为`full`，以便排查错误
+- `PORT`: 程序运行的端口

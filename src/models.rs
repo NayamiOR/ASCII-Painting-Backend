@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
 use crate::dao::PaintingState;
+use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct GetPaintingResponse {
     pub id: i64,
     pub name: String,
@@ -9,51 +9,51 @@ pub(crate) struct GetPaintingResponse {
     pub avatar: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct CreatePaintingRequest {
     pub name: String,
     pub content: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct CreatePaintingResponse {
     pub message: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct DeletePaintingResponse {
     pub message: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct LikePaintingRequest {
     pub painting_id: i64,
     pub state: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct LikePaintingResponse {
     pub message: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct FavoritePaintingRequest {
     pub painting_id: i64,
     pub state: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct FavoritePaintingResponse {
     pub message: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct PassPaintingRequest {
     pub id: i64,
     pub state: i64,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct PassPaintingResponse {
     pub message: String,
 }
@@ -61,10 +61,16 @@ pub(crate) struct PassPaintingResponse {
 #[derive(Serialize, Debug, Deserialize)]
 pub(crate) struct LoginResponse {
     pub(crate) message: String,
-    pub(crate) refresh_token: String,
+    pub(crate) user: UserBasicInfoResponse,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Debug, Deserialize)]
+pub(crate) struct UserBasicInfoResponse {
+    pub(crate) user_id: i32,
+    pub(crate) name: String,
+}
+
+#[derive(Deserialize, Debug)]
 pub(crate) struct LoginRequest {
     pub(crate) email: String,
     pub(crate) password: String,
@@ -73,10 +79,9 @@ pub(crate) struct LoginRequest {
 #[derive(Serialize, Debug)]
 pub(crate) struct RegisterResponse {
     pub(crate) message: String,
-    pub(crate) refresh_token: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub(crate) struct RegisterRequest {
     pub(crate) name: String,
     pub(crate) email: String,
@@ -85,7 +90,7 @@ pub(crate) struct RegisterRequest {
     // code: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct UserInfoResponseData {
     pub id: i32,
     pub name: String,
@@ -95,46 +100,46 @@ pub(crate) struct UserInfoResponseData {
     pub favorite_num: i64,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct UserInfoResponse {
     pub message: String,
     pub data: UserInfoResponseData,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct UpdateUserInfoResponse {
     pub message: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct UpdateUserInfoRequest {
     // todo
     pub name: String,
 }
 
 // multipart/form-data includes a optional file field
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct UpdateAvatarRequest {
     pub avatar: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct UpdateAvatarResponse {
     pub avatar: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct UpdateAvatarResponseData {
     pub message: String,
     pub data: UpdateAvatarResponse,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct CodeRequest {
     pub email: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct CodeResponse {
     pub message: String,
 }

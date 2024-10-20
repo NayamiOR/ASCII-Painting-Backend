@@ -13,6 +13,8 @@ mod utils;
 use sqlx::postgres::PgPoolOptions;
 use std::collections::HashMap;
 use std::env;
+use tower_http::trace::TraceLayer;
+use tracing_subscriber::prelude::*;
 
 #[tokio::main]
 async fn main() {
@@ -24,6 +26,10 @@ async fn main() {
     // let _ = env::var("JWT_SECRET").expect("JWT_SECRET is not set");
 
     let config: HashMap<String, String> = env::vars().collect();
+
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .init();
 
     let url = format!(
         "localhost:{}",

@@ -1,20 +1,28 @@
 use crate::dao::{self, get_user_by_email, save_user, user_email_exist, User};
 use crate::error::{Error, ServerError};
-use crate::models::*;
 use crate::utils::authentication::{
     extract_claims_from_header, generate_jwt, generate_refresh_token,
 };
 use crate::ApiContext;
-use axum::extract::{Json, Query, State};
-use axum::http::HeaderMap;
-use axum::response::IntoResponse;
-use axum::routing::{get, post};
-use axum::Router;
+use crate::{log, models::*};
+use axum::routing::head;
+use axum::{
+    extract::{Json, Query, State},
+    http::{header, header::SET_COOKIE, HeaderMap, HeaderValue, StatusCode},
+    response::{Html, IntoResponse},
+    routing::{get, post},
+    Router,
+};
+use axum_extra::extract::{cookie, CookieJar};
 use axum_macros::debug_handler;
+// use reqwest::StatusCode;
+use serde::ser::Impossible;
 use serde::{Deserialize, Serialize};
 use sqlx::types::chrono::Utc;
 use std::env;
 use std::fmt::Debug;
+use tower_cookies::cookie::{time, CookieBuilder};
+use tower_cookies::{Cookie, Cookies};
 
 pub fn create_route() -> Router<ApiContext> {
     Router::new().nest(
@@ -32,10 +40,14 @@ pub fn create_route() -> Router<ApiContext> {
 #[debug_handler]
 async fn login(
     State(state): State<ApiContext>,
+    // mut cookie: Cookies,
     Json(payload): Json<LoginRequest>,
-) -> Result<(HeaderMap, Json<LoginResponse>), Error> {
+) -> impl IntoResponse {
+    // ) -> Result<(HeaderMap, Json<LoginResponse>), Error> {
+    dbg!(&payload);
     let url = env::var("DATABASE_URL").expect("DATABASE_URL MUST BE SET");
     let pool = &state.pool;
+    println!("login request: {:?}", &payload);
 
     if !user_email_exist(pool, &payload.email).await? {
         return Err(Error::Server(Box::new(ServerError::NoUser)));
@@ -50,27 +62,36 @@ async fn login(
     if !bcrypt::verify(&payload.password, &user.password).unwrap() {
         return Err(Error::Server(Box::new(ServerError::PasswordIncorrect)));
     }
-    let jwt = generate_jwt(&payload.email, user.id);
-    let refresh_token = generate_refresh_token();
-
-    let mut headers = HeaderMap::new();
-    headers.insert("Authorization", format!("Bearer {}", jwt).parse().unwrap());
 
     let body = Json(LoginResponse {
         message: "Login success".to_string(),
-        refresh_token,
+        user: crate::models::UserBasicInfoResponse {
+            user_id: user.id,
+            name: user.username,
+        },
     });
 
-    Ok((headers, body))
+    let headers = generate_jwt_response(&payload.email, user.id).unwrap();
+
+    Ok((StatusCode::OK, headers, body))
 }
 
 #[debug_handler]
 async fn register(
     State(state): State<ApiContext>,
     Json(payload): Json<RegisterRequest>,
-) -> Result<(HeaderMap, Json<RegisterResponse>), ServerError> {
+    // ) -> Result<(HeaderMap, Json<RegisterResponse>), ServerError> {
+) -> impl IntoResponse {
     let url = env::var("DATABASE_URL").expect("DATABASE_URL MUST BE SET");
     let pool = &state.pool;
+
+    dbg!(&payload);
+
+    if payload.name.is_empty() || payload.email.is_empty() || payload.password.is_empty() {
+        return Err(ServerError::InvalidInput);
+    }
+
+    // TODO: check email format, check password format, check User name format
 
     // 检查用户是否已经存在
     match user_email_exist(pool, &payload.email).await {
@@ -90,19 +111,33 @@ async fn register(
 
     save_user(pool, &user).await.unwrap();
 
-    // 生成jwt和refresh token，返回
-    let jwt = generate_jwt(&payload.email, user.id);
-    let refresh_token = generate_refresh_token();
-
-    let mut headers = HeaderMap::new();
-    headers.insert("Authorization", format!("Bearer {}", jwt).parse().unwrap());
+    let headers = generate_jwt_response(&payload.email, user.id).unwrap();
 
     let body = Json(RegisterResponse {
         message: "Register success".to_string(),
-        refresh_token,
     });
 
-    Ok((headers, body))
+    Ok((StatusCode::OK, headers, body))
+}
+
+fn generate_jwt_response(email: &str, id: i32) -> Result<HeaderMap, Error> {
+    let jwt = generate_jwt(email, id);
+    let refresh_token = generate_refresh_token();
+
+    let refresh_token_cookie = Cookie::build(("refresh_token", refresh_token))
+        .http_only(true)
+        .secure(false) // TODO: set to true in production
+        .path("/")
+        .max_age(time::Duration::days(30));
+
+    let mut headers = HeaderMap::new();
+    headers.insert("Authorization", format!("Bearer {}", jwt).parse().unwrap());
+    headers.insert(
+        SET_COOKIE,
+        refresh_token_cookie.to_string().parse().unwrap(),
+    );
+
+    Ok(headers)
 }
 
 #[debug_handler]

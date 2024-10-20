@@ -45,6 +45,7 @@ pub(crate) enum ServerError {
     InvalidRefreshToken,
     InvalidDelete,
     Other(Box<dyn std::error::Error>),
+    InvalidInput,
 }
 
 impl IntoResponse for ServerError {
@@ -58,6 +59,7 @@ impl IntoResponse for ServerError {
             Self::InvalidJwt => "Invalid JWT",
             Self::InvalidRefreshToken => "Invalid refresh token",
             Self::InvalidDelete => "Invalid delete",
+            Self::InvalidInput => "Invalid input",
 
             Self::Other(e) => &format!("Unknown error: {}", e),
         };
